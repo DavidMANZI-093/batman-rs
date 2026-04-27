@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub enum BatteryStatus {
     Charging,
     Discharging,
@@ -6,6 +7,7 @@ pub enum BatteryStatus {
     Unknown,
 }
 
+#[derive(Debug)]
 pub enum PowerEvent {
     Battery { capacity: u8, status: BatteryStatus },
     AcAdapter { online: bool },

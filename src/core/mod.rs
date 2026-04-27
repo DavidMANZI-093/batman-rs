@@ -1,4 +1,4 @@
 pub mod models;
 pub mod parser;
 
-pub use models::{BatteryStatus, ParseError, PowerEvent};
+pub use models::{BatteryStatus, Config, ParseError, PowerEvent};

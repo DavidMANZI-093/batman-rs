@@ -1,3 +1,5 @@
+use serde::Deserialize;
+
 #[derive(Debug)]
 pub enum BatteryStatus {
     Charging,
@@ -19,4 +21,26 @@ pub enum ParseError {
     InvalidUtf8,
     InvalidCapacity(String),
     InvalidStatus(String),
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Config {
+    pub rules: Vec<Rule>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Rule {
+    pub state: RuleState,
+    pub capacity_under: Option<u8>,
+    pub command: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub enum RuleState {
+    Charging,
+    Discharging,
+    Full,
+    NotCharging,
+    AcOnline,
+    AcOffline,
 }

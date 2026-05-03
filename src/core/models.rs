@@ -54,8 +54,8 @@ pub struct SystemPowerState {
     pub ac_online: bool,
 }
 
-impl Default for SystemPowerState {
-    fn default() -> Self {
+impl SystemPowerState {
+    pub fn new() -> Self {
         let mut capacity: u8 = 100;
         let mut status: BatteryStatus = BatteryStatus::Unknown;
         let mut ac_online: bool = true;

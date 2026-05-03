@@ -35,5 +35,5 @@ pub fn find_config_path(cli_args: &Cli) -> Result<String, String> {
         return Ok(system_config.to_string());
     }
 
-    Err("No config file found. Checked CLI path, user config (~/.config/batman/config.toml), and system config (/etc/batman/config.toml)".to_string())
+    Err("No config file found. Checked CLI path, user config (~/.config/batman/config.toml), and system config (/etc/batman/config.toml).".to_string())
 }

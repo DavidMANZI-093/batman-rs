@@ -25,8 +25,8 @@ pub fn process_event(event: &PowerEvent, current_state: &mut SystemPowerState, c
         let scenario_matches: bool = match rule.state {
             RuleState::Charging => current_state.status == BatteryStatus::Charging,
             RuleState::Discharging => current_state.status == BatteryStatus::Discharging,
-            RuleState::AcOnline => current_state.ac_online == true,
-            RuleState::AcOffline => current_state.ac_online == false,
+            RuleState::AcOnline => current_state.ac_online,
+            RuleState::AcOffline => !current_state.ac_online,
             _ => false,
         };
 
@@ -78,7 +78,7 @@ fn execute_rule(command_string: &str, is_critical: bool) {
             }
             Err(e) => {
                 error!(
-                    "CRITICAL: Failed to spawn command '{}'. Error: {}",
+                    "Critical: Failed to spawn command '{}'. Error: {}",
                     binary, e
                 );
 
@@ -96,14 +96,17 @@ fn emergency_shutdown() {
     if Command::new("systemctl").arg("poweroff").spawn().is_ok() {
         return;
     }
+    warn!("Systemctl poweroff failed, trying loginctl...");
 
     if Command::new("loginctl").arg("poweroff").spawn().is_ok() {
         return;
     }
+    warn!("Loginctl poweroff failed, trying shutdown...");
 
     if Command::new("shutdown").args(["-h", "now"]).spawn().is_ok() {
         return;
     }
+    warn!("Shutdown -h now failed, no more fallbacks!");
 
-    error!("ALL FALLBACKS FAILED. System is going to crash from power loss.");
+    error!("All fallbacks failed. System is going to crash from power loss.");
 }

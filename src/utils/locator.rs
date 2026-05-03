@@ -27,7 +27,7 @@ pub fn find_config_path(cli_args: &Cli) -> Option<String> {
         return Some(user_config);
     }
 
-    let system_config = "/etc/batman-rs/config.toml";
+    let system_config = "/etc/batman/config.toml";
     if Path::new(system_config).exists() {
         debug!("Found system config at: {}", system_config);
         return Some(system_config.to_string());

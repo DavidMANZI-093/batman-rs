@@ -2,9 +2,9 @@ use clap::Parser;
 
 #[derive(Parser, Debug)]
 #[command(
-    name = "batman-rs",
+    name = "batman",
     version,
-    about = "batman-rs connects directly to the Linux kernel via AF_NETLINK to monitor hardware power events and execute user-defined thresholds."
+    about = "batman connects directly to the Linux kernel via AF_NETLINK to monitor hardware power events and execute user-defined thresholds."
 )]
 pub struct Cli {
     /// Path to a custom configuration file

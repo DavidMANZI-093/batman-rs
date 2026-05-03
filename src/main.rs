@@ -3,7 +3,7 @@ use libc::{AF_NETLINK, SOCK_RAW, bind, recv, sockaddr_nl, socket};
 use std::{mem, sync::mpsc};
 
 use crate::{
-    core::{ParseError, PowerEvent, SystemPowerState, parser::parse_uevent},
+    core::{Config, ParseError, PowerEvent, SystemPowerState, parser::parse_uevent},
     services::{config::load_config, executor::process_event},
     utils::{cli::Cli, locator::find_config_path},
 };
@@ -16,21 +16,29 @@ const NETLINK_KOBJECT_UEVENT: i32 = 15;
 const UEVENT_BUFFER_SIZE: usize = 8192;
 
 fn main() {
-    let cli = Cli::parse();
+    let cli: Cli = Cli::parse();
 
-    let config_path = find_config_path(&cli).unwrap();
-    let config = load_config(&config_path).unwrap();
+    let config_path: String = match find_config_path(&cli) {
+        Ok(path) => path,
+        Err(e) => {
+            error!("Failed to find config: {}", e);
+            std::process::exit(1);
+        }
+    };
+    let config: Config = load_config(&config_path);
 
-    let mut system_state = SystemPowerState::default();
+    let mut power_state: SystemPowerState = SystemPowerState::new();
     let (tx, rx) = mpsc::channel::<PowerEvent>();
 
+    // Consumer thread: receives and handles PowerEvents.
     std::thread::spawn(move || {
         while let Ok(event) = rx.recv() {
             debug!("event received: {:?}", event);
-            process_event(&event, &mut system_state, &config);
+            process_event(&event, &mut power_state, &config);
         }
     });
 
+    // Netlink listener: binds AF_NETLINK socket and blocks waiting for kernel events.
     unsafe {
         let fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_KOBJECT_UEVENT);
         if fd < 0 {
@@ -67,7 +75,7 @@ fn main() {
                         }
                     }
                     Err(ParseError::MissingFields) => {
-                        // Normal behavior. It was probably a USB mouse uevent, just ignore it.
+                        // // Not a relevant power event or malformed uevent - ignore
                     }
                     Err(e) => {
                         warn!("Failed to parse hardware event: {:?}", e);

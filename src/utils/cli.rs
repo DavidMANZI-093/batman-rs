@@ -4,7 +4,7 @@ use clap::Parser;
 #[command(
     name = "batman",
     version,
-    about = "batman connects directly to the Linux kernel via AF_NETLINK to monitor hardware power events and execute user-defined thresholds."
+    about = "batman (battery manager) connects directly to the Linux kernel via AF_NETLINK to monitor hardware power events and execute user-defined thresholds."
 )]
 pub struct Cli {
     /// Path to a custom configuration file

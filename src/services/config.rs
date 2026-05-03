@@ -1,10 +1,12 @@
 use std::{fs, process::Command};
 
-use crate::{core::Config, error, info, warn};
+use crate::{core::Config, debug, error, info, warn};
 
 pub fn load_config(path: &str) -> Config {
-    let config_content = fs::read_to_string(path)
-        .unwrap_or_else(|e| error!("Failed to read config file '{}': {}", path, e));
+    let config_content = fs::read_to_string(path).unwrap_or_else(|e| {
+        error!("Failed to read config file '{}': {}", path, e);
+        std::process::exit(1);
+    });
 
     let config: Config = toml::from_str(&config_content).unwrap_or_else(|e| {
         error!("Syntax error in config file: {}", e);
@@ -31,5 +33,8 @@ fn command_exists(cmd: &str) -> bool {
         .arg(cmd)
         .output()
         .map(|out| out.status.success())
-        .unwrap_or(false)
+        .unwrap_or_else(|e| {
+            debug!("Failed to run 'which {}': {}", cmd, e);
+            false
+        })
 }

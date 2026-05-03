@@ -32,14 +32,14 @@ pub fn parse_uevent(data: &[u8]) -> Result<PowerEvent, ParseError> {
                 let cap_str =
                     std::str::from_utf8(cap_bytes).map_err(|_| ParseError::InvalidUtf8)?;
 
-                let cap_val = cap_str
-                    .parse::<u8>()
+                let cap_val: u8 = cap_str
+                    .parse()
                     .map_err(|_| ParseError::InvalidCapacity(cap_str.to_string()))?;
 
                 let stat_str =
                     std::str::from_utf8(stat_bytes).map_err(|_| ParseError::InvalidUtf8)?;
 
-                let stat_val = match stat_str {
+                let stat_val: BatteryStatus = match stat_str {
                     "Charging" => BatteryStatus::Charging,
                     "Discharging" => BatteryStatus::Discharging,
                     "Full" => BatteryStatus::Full,

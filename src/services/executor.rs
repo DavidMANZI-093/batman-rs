@@ -9,7 +9,7 @@ use crate::{
 };
 
 pub fn process_event(event: &PowerEvent, current_state: &mut SystemPowerState, config: &Config) {
-    let old_state = current_state.clone();
+    let old_state: SystemPowerState = current_state.clone();
 
     match event {
         PowerEvent::Battery { capacity, status } => {
@@ -22,7 +22,7 @@ pub fn process_event(event: &PowerEvent, current_state: &mut SystemPowerState, c
     }
 
     for rule in &config.rules {
-        let scenario_matches = match rule.state {
+        let scenario_matches: bool = match rule.state {
             RuleState::Charging => current_state.status == BatteryStatus::Charging,
             RuleState::Discharging => current_state.status == BatteryStatus::Discharging,
             RuleState::AcOnline => current_state.ac_online == true,
@@ -34,7 +34,7 @@ pub fn process_event(event: &PowerEvent, current_state: &mut SystemPowerState, c
             continue;
         }
 
-        let threshold_met = match rule.capacity_under {
+        let threshold_met: bool = match rule.capacity_under {
             Some(threshold) => {
                 let was_safely_above = old_state.capacity > threshold;
                 let is_now_below_or_equal = current_state.capacity <= threshold;
@@ -50,7 +50,7 @@ pub fn process_event(event: &PowerEvent, current_state: &mut SystemPowerState, c
     }
 }
 
-pub fn execute_rule(command_string: &str, is_critical: bool) {
+fn execute_rule(command_string: &str, is_critical: bool) {
     let mut parts = command_string.split_whitespace();
 
     if let Some(binary) = parts.next() {

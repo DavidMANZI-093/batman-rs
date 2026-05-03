@@ -1,7 +1,12 @@
+use clap::Parser;
 use libc::{AF_NETLINK, SOCK_RAW, bind, recv, sockaddr_nl, socket};
 use std::{mem, sync::mpsc};
 
-use crate::core::{ParseError, PowerEvent, parser::parse_uevent};
+use crate::{
+    core::{ParseError, PowerEvent, SystemPowerState, parser::parse_uevent},
+    services::{config::load_config, executor::process_event},
+    utils::{cli::Cli, locator::find_config_path},
+};
 
 mod core;
 mod services;
@@ -11,11 +16,18 @@ const NETLINK_KOBJECT_UEVENT: i32 = 15;
 const UEVENT_BUFFER_SIZE: usize = 8192;
 
 fn main() {
+    let cli = Cli::parse();
+
+    let config_path = find_config_path(&cli).unwrap();
+    let config = load_config(&config_path).unwrap();
+
+    let mut system_state = SystemPowerState::default();
     let (tx, rx) = mpsc::channel::<PowerEvent>();
 
     std::thread::spawn(move || {
         while let Ok(event) = rx.recv() {
             debug!("event received: {:?}", event);
+            process_event(&event, &mut system_state, &config);
         }
     });
 

@@ -1,4 +1,4 @@
-use crate::core::{BatteryStatus, ParseError, PowerEvent, models::SystemPowerState};
+use crate::core::{BatteryStatus, ParseError, PowerEvent};
 
 pub fn parse_uevent(data: &[u8]) -> Result<PowerEvent, ParseError> {
     let mut is_power_supply: bool = false;

@@ -33,7 +33,7 @@ fn main() {
     // Consumer thread: receives and handles PowerEvents.
     std::thread::spawn(move || {
         while let Ok(event) = rx.recv() {
-            debug!("event received: {:?}", event);
+            debug!("Event received: {:?}", event);
             process_event(&event, &mut power_state, &config);
         }
     });
@@ -75,11 +75,14 @@ fn main() {
                         }
                     }
                     Err(ParseError::MissingFields) => {
-                        // // Not a relevant power event or malformed uevent - ignore
+                        // Not a relevant power event or malformed uevent - ignore
+                        debug!("Ignoring non-power event or malformed uevent.");
                     }
-                    Err(e) => {
-                        warn!("Failed to parse hardware event: {:?}", e);
-                    }
+                    Err(e) => match &e {
+                        ParseError::InvalidCapacity(s) => warn!("Invalid capacity value: {}", s),
+                        ParseError::InvalidStatus(s) => warn!("Invalid status value: {}", s),
+                        _ => warn!("Failed to parse hardware event: {:?}", e),
+                    },
                 }
             }
         }

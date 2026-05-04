@@ -1,4 +1,4 @@
-# batman
+# batman-rs
 
 Battery manager daemon for Linux. Monitors hardware power events and executes
 user-defined shell commands at any battery level or power state transition.
@@ -35,8 +35,10 @@ configuration is built around them.
 Install using an AUR helper such as yay or paru:
 
 ```bash
-yay -S batman
+yay -S batman-rs
 ```
+
+A default configuration is installed to `/etc/batman/config.toml`. Edit it to match your setup before enabling the service.
 
 #### From source
 
@@ -75,14 +77,20 @@ batman searches for a configuration file in the following order:
     3. ~/.config/batman/config.toml
     4. /etc/batman/config.toml
 
-Copy the sample configuration to get started:
+On Arch Linux (AUR), a default configuration is installed to `/etc/batman/config.toml`.
+Edit it directly, or copy it to your user config directory for per-user overrides:
 
 ```bash
 mkdir -p ~/.config/batman
-cp /usr/share/doc/batman/config.toml.sample ~/.config/batman/config.toml
+cp /etc/batman/config.toml ~/.config/batman/config.toml
 ```
 
-Then edit `~/.config/batman/config.toml` to match your setup.
+On other distributions, copy the sample from the source tree:
+
+```bash
+mkdir -p ~/.config/batman
+cp config.toml.sample ~/.config/batman/config.toml
+```
 
 
 ### Rule Fields

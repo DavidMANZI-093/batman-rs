@@ -1,0 +1,74 @@
+# batman (battery manager) - Sample Configuration
+# -------------------------------------------------------------
+#
+# Recommended dependencies:
+#   systemd               - systemctl       (power-off, assumed system default)
+#   libnotify             - notify-send     (desktop notifications)
+#   power-profiles-daemon - powerprofilesctl (power profile switching)
+#
+# -------------------------------------------------------------
+# Rule fields:
+#   state         : Charging | Discharging | Full | NotCharging | AcOnline | AcOffline
+#   capacity_under: (optional) fires only on downward threshold crossing
+#   command       : shell command - supports &&, ;, ||, pipes, and redirections
+#
+# Note: rules without capacity_under fire on every matching kernel uevent.
+#       AcOnline/AcOffline are safe - each fires once per physical plug/unplug.
+#       Charging/Full/NotCharging repeat - keep commands idempotent.
+#
+# -------------------------------------------------------------
+
+
+# -- AC ADAPTER -----------------------------------------------
+
+# Plugged in - restore balanced profile and confirm
+[[rules]]
+state = "AcOnline"
+command = "powerprofilesctl set balanced && notify-send -a batman -i ac-adapter -u low 'AC Connected' 'Switched to balanced power profile'"
+
+# Unplugged - drop to power-saver immediately
+[[rules]]
+state = "AcOffline"
+command = "powerprofilesctl set power-saver && notify-send -a batman -i battery -u normal 'On Battery' 'Switched to power-saver profile'"
+
+
+# -- BATTERY FULL ---------------------------------------------
+
+[[rules]]
+state = "Full"
+command = "notify-send -a batman -i battery-full -u low 'Fully Charged' 'Consider unplugging to preserve battery health'"
+
+
+# -- NOT CHARGING ---------------------------------------------
+# Charger connected but not charging (threshold active, limited USB-C, charger below system draw)
+
+[[rules]]
+state = "NotCharging"
+command = "notify-send -a batman -i battery-full-charged -u low 'Not Charging' 'Charge threshold reached or power-limited connection'"
+
+
+# -- DISCHARGING THRESHOLDS -----------------------------------
+
+# 30% - reinforce power-saver in case AcOffline was missed
+[[rules]]
+state = "Discharging"
+capacity_under = 30
+command = "powerprofilesctl set power-saver && notify-send -a batman -i battery-low -u normal 'Battery at 30%' 'Switched to power-saver profile'"
+
+# 20% - warn the user to find a charger
+[[rules]]
+state = "Discharging"
+capacity_under = 20
+command = "notify-send -a batman -i battery-low -u normal 'Battery Low' 'Battery at 20% - plug in soon'"
+
+# 10% - critical urgency, persistent alert
+[[rules]]
+state = "Discharging"
+capacity_under = 10
+command = "notify-send -a batman -i battery-caution -u critical 'Battery Critical' 'Battery at 10% - connect charger now!'"
+
+# 5% - last resort: notify and initiate graceful shutdown to protect hardware
+[[rules]]
+state = "Discharging"
+capacity_under = 5
+command = "notify-send -a batman -i battery-empty -u critical 'Shutting Down' 'Battery critical - powering off to protect hardware'; sleep 2; systemctl poweroff"

@@ -1,0 +1,13 @@
+[Unit]
+Description=batman battery manager
+Documentation=https://github.com/DavidMANZI-093/batman-rs
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/batman
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

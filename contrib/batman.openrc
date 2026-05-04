@@ -1,0 +1,29 @@
+#!/sbin/openrc-run
+
+name="batman"
+description="batman battery manager"
+
+supervisor=supervise-daemon
+command="/usr/bin/batman"
+command_user="${BATMAN_USER}"
+pidfile="/run/${RC_SVCNAME}.pid"
+
+depend() {
+    need dbus
+    after local
+}
+
+start_pre() {
+    if [ -z "${BATMAN_USER}" ]; then
+        eerror "BATMAN_USER must be set in /etc/conf.d/batman before starting."
+        return 1
+    fi
+
+    # batman needs access to the user D-Bus session for notify-send and
+    # powerprofilesctl. elogind (or systemd-logind) exposes the session bus
+    # at /run/user/<UID>/bus. Set both variables so child processes can reach it.
+    local uid
+    uid=$(id -u "${BATMAN_USER}")
+    export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/${uid}/bus"
+    export XDG_RUNTIME_DIR="/run/user/${uid}"
+}

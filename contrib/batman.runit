@@ -1,0 +1,17 @@
+#!/bin/sh
+# runit run script for batman
+#
+# Place this file at:
+#   ~/.local/share/sv/batman/run     (per-user service, Void Linux)
+#
+# Make it executable:
+#   chmod +x ~/.local/share/sv/batman/run
+#
+# Enable by linking into the active service directory:
+#   ln -s ~/.local/share/sv/batman ~/.local/share/sv/batman
+#
+# Void Linux starts per-user runsvdir automatically when the user logs in
+# if configured via pam_runsvdir or a login session hook. Refer to the
+# Void Linux handbook for per-user service setup details.
+
+exec /usr/bin/batman 2>&1

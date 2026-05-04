@@ -12,9 +12,11 @@
 #   capacity_under: (optional) fires only on downward threshold crossing
 #   command       : shell command - supports &&, ;, ||, pipes, and redirections
 #
-# Note: rules without capacity_under fire on every matching kernel uevent.
-#       AcOnline/AcOffline are safe - each fires once per physical plug/unplug.
-#       Charging/Full/NotCharging repeat - keep commands idempotent.
+# Note: all rules fire only on state transitions.
+#       batman tracks the previous state and suppresses execution if the
+#       relevant condition has not changed since the last kernel uevent.
+#       Rules with capacity_under fire once per downward threshold crossing.
+#       Rules without capacity_under fire once per state change.
 #
 # -------------------------------------------------------------
 

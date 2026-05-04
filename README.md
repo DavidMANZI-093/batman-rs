@@ -77,8 +77,12 @@ batman searches for a configuration file in the following order:
     3. ~/.config/batman/config.toml
     4. /etc/batman/config.toml
 
-On Arch Linux (AUR), a default configuration is installed to `/etc/batman/config.toml`.
-Edit it directly, or copy it to your user config directory for per-user overrides:
+On Arch Linux (AUR), a default configuration is pre-installed at `/etc/batman/config.toml`
+and batman will use it immediately without any setup. However, editing that file directly
+means package upgrades may replace it (your version is saved as `.pacsave`).
+
+The recommended approach is to copy it to your user config directory, which takes priority
+and is never touched by package updates:
 
 ```bash
 mkdir -p ~/.config/batman
@@ -110,32 +114,16 @@ command = "notify-send -u critical 'Battery Critical' 'Battery at 10%'"
 
 ### Firing Semantics
 
-Rules without `capacity_under` fire on every matching kernel uevent. Understanding
-when the kernel sends these events is essential for writing correct rules.
+All rules fire only on state transitions. batman tracks the previous power state
+and suppresses execution if the relevant condition has not changed since the last
+kernel uevent. This prevents duplicate commands when the kernel emits redundant
+events for the same state.
 
-AcOnline / AcOffline
+Rules without `capacity_under` fire exactly once per state change, for example:
+when the battery status transitions from Discharging to Charging, or when the AC
+adapter goes from offline to online.
 
-    The kernel sends one event per physical plug or unplug of an AC adapter.
-    Safe to use for any command, including stateful ones such as switching
-    power profiles.
-
-Charging
-
-    The kernel sends a battery uevent on every capacity change while charging,
-    approximately once per percent. A bare Charging rule without capacity_under
-    will fire roughly 100 times during a full charge cycle. Only use idempotent
-    commands in this state.
-
-Full / NotCharging
-
-    The kernel sends periodic uevents while the battery holds these states.
-    Frequency varies by hardware. Use only idempotent commands.
-
-Discharging + capacity_under
-
-    The rule fires exactly once when battery capacity crosses downward below or
-    equal to the threshold value. This is the recommended pattern for all
-    battery alerts and threshold-triggered actions.
+Rules with `capacity_under` fire exactly once per downward threshold crossing, when battery capacity drops from above the threshold to at or below it.
 
 
 ## Service Management

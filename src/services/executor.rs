@@ -42,7 +42,14 @@ pub fn process_event(event: &PowerEvent, current_state: &mut SystemPowerState, c
 
                 was_safely_above && is_now_below_or_equal
             }
-            None => true,
+            None => match rule.state {
+                RuleState::Charging    => old_state.status != BatteryStatus::Charging,
+                RuleState::Discharging => old_state.status != BatteryStatus::Discharging,
+                RuleState::Full        => old_state.status != BatteryStatus::Full,
+                RuleState::NotCharging => old_state.status != BatteryStatus::NotCharging,
+                RuleState::AcOnline    => !old_state.ac_online,
+                RuleState::AcOffline   => old_state.ac_online,
+            },
         };
 
         if threshold_met {
